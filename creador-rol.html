@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador de Escenarios de Rol - Personalizable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --fondo: #121212;
+            --tarjeta: #1a1a1a;
+            --resaltado: #ff8c00;
+            --texto: #ffffff;
+            --texto-secundario: #999999;
+            --borde: #333333;
+            --peligro: #ef4444;
+            --exito: #4ade80;
+        }
+
+        body {
+            background: var(--fondo);
+            color: var(--texto);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Barra Superior */
+        .barra-superior {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: var(--tarjeta);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--resaltado);
+        }
+
+        .acciones-superior {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-accion {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-cerrar {
+            background: transparent;
+            color: var(--texto-secundario);
+            font-size: 16px;
+        }
+
+        .btn-guardar {
+            background: var(--resaltado);
+            color: #000;
+        }
+
+        .btn-guardar:hover { background: #ffaa33; }
+
+        /* Pestañas */
+        .pestanas {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--borde);
+            overflow-x: auto;
+        }
+
+        .pestana {
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--texto-secundario);
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .pestana.activa {
+            background: var(--resaltado);
+            color: #000;
+            font-weight: 700;
+        }
+
+        /* Contenedor Principal */
+        .contenedor {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Secciones Generales */
+        .seccion {
+            background: var(--tarjeta);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .seccion h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--resaltado);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .etiqueta {
+            font-size: 14px;
+            color: var(--texto-secundario);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .campo-texto, .campo-largo, select {
+            width: 100%;
+            background: var(--fondo);
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--texto);
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .campo-largo {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .contador {
+            text-align: right;
+            font-size: 13px;
+            color: var(--texto-secundario);
+            margin-top: -8px;
+            margin-bottom: 12px;
+        }
+
+        /* Imagen del Escenario */
+        .contenedor-imagen {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px dashed var(--borde);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            color: var(--texto-secundario);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .contenedor-imagen:hover { border-color: var(--resaltado); color: var(--resaltado); }
+
+        /* Tarjetas de Personajes */
+        .lista-personajes {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tarjeta-personaje {
+            display: flex;
+            gap: 12px;
+            background: var(--fondo);
+            border-radius: 12px;
+            padding: 12px;
+            border-left: 4px solid var(--borde);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tarjeta-personaje:hover {
+            transform: translateX(4px);
+            border-color: var(--resaltado);
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: var(--borde);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--texto-secundario);
+            font-size: 24px;
+        }
+
+        .info-personaje h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: var(--texto-secundario);
+        }
+
+        .info-personaje p {
+            font-size: 13px;
+            color: var(--texto-secundario);
+            margin-top: 4px;
+        }
+
+        /* Configuraciones y Opciones */
+        .opcion-config {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .opcion-config:last-child { border-bottom: none; }
+
+        .interruptor {
+            width: 48px;
+            height: 26px;
+            background: var(--borde);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .interruptor.activo { background: var(--resaltado); }
+
+        .interruptor::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .interruptor.activo::after { transform: translateX(22px); }
+
+        /* Botones Inferiores */
+        .grupo-botones {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secundario {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px;
+            background: var(--tarjeta);
+            border: 1px solid var(--borde);
+            color: var(--texto);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-peligro {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--peligro);
+            color: var(--peligro);
+        }
+
+        .btn-principal {
+            flex: 1 1 100%;
+            padding: 15px;
+            background: var(--resaltado);
+            color: #000;
+            font-weight: 900;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Barra de Navegación Inferior */
+        .navegacion {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--tarjeta);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid var(--borde);
+            z-index: 100;
+        }
+
+        .item-nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--texto-secundario);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .item-nav.activo { color: var(--resaltado); }
+
+        .item-nav span { font-size: 20px; }
+
+        /* Modal para crear/editar */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-contenido {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--tarjeta);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .cabecera-modal {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cerrar-modal {
+            background: none;
+            border: none;
+            color: var(--texto-secundario);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .slider-peso {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .etiquetas-peso {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--texto-secundario);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Barra Superior -->
+<div class="barra-superior">
+    <div class="logo">🔥 <span>Creador de Rol</span></div>
+    <div class="acciones-superior">
+        <button class="btn-accion btn-cerrar">CERRAR</button>
+        <button class="btn-accion btn-guardar">💾 GUARDAR</button>
+    </div>
+</div>
+
+<!-- Pestañas -->
+<div class="pestanas">
+    <button class="pestana activa">📋 Detalles</button>
+    <button class="pestana">👥 Personajes</button>
+    <button class="pestana">⚙️ Configuración</button>
+    <button class="pestana">📜 Historia</button>
+</div>
+
+<!-- Contenido Principal -->
+<div class="contenedor">
+
+    <!-- Imagen del Escenario -->
+    <div class="contenedor-imagen">
+        Haz clic para agregar imagen
+    </div>
+
+    <!-- Detalles del Escenario -->
+    <div class="seccion">
+        <h3>📝 Detalles del Escenario</h3>
+        <label class="etiqueta">Nombre del escenario</label>
+        <input type="text" class="campo-texto" maxlength="35" placeholder="Escribe el nombre aquí...">
+        <div class="contador">0 / 35</div>
+
+        <label class="etiqueta">Descripción corta</label>
+        <textarea class="campo-largo" maxlength="250" placeholder="Breve resumen de tu historia..."></textarea>
+        <div class="contador">0 / 250</div>
+
+        <label class="etiqueta">Género / Tipo de Rol</label>
+        <select class="campo-texto">
+            <option value="">Selecciona un género</option>
+            <option>Romántico</option>
+            <option>Drama</option>
+            <option>Acción / Aventura</option>
+            <option>Fantasía / Magia</option>
+            <option>Ciencia Ficción</option>
+            <option>Terror / Misterio</option>
+            <option>Escolar / Cotidiano</option>
+            <option>Histórico</option>
+            <option>Otro (especifica después)</option>
+        </select>
+    </div>
+
+    <!-- Personajes -->
+    <div class="seccion">
+        <h3>👥 Personajes y Elementos</h3>
+        <p style="color:var(--texto-secundario); margin-bottom:15px;">Agrega aquí todos los personajes, lugares o reglas de tu historia</p>
+        
+        <div class="lista-personajes">
+            <div class="tarjeta-personaje">
+                <div class="avatar">+</div>
+                <div class="info-personaje">
+                    <h4>Nuevo Personaje / Elemento</h4>
+                    <p>Haz clic para editar sus datos, descripción y configuración</p>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-secundario" style="width:100%;">+ Agregar nuevo</button>
+    </div>
+
+    <!-- Configuración General -->
+    <div class="seccion">
+        <h3>⚙️ Configuración del Rol</h3>
+
+        <div class="opcion-config">
+            <div>
+                <h4>Personaje que interpretarás</h4>
+                <p style="font-size:13px; color:var(--texto-secundario);">El personaje principal que usarás tú</p>
+            </div>
+            <select style="width:150px;">
+                <option value="">Selecciona uno</option>
+            </select>
+        </div>
+
+        <div class="opcion-config">
+            <div>
+                <h4>Contenido para adultos</h4>
+                <p style="font-size:13px; color:var(--texto-secundario);">Permite temas maduros en la historia</p>
+            </div>
+            <div class="interruptor" onclick="this.classList.toggle('activo')"></div>
+        </div>
+
+        <div class="opcion-config">
+            <div>
+                <h4>Permitir cambios en la historia</h4>
+                <p style="font-size:13px; color:var(--texto-secundario);">Modificar la trama sobre la marcha</p>
+            </div>
+            <div class="interruptor activo" onclick="this.classList.toggle('activo')"></div>
+        </div>
+
+        <div class="opcion-config">
+            <div>
+                <h4>Mostrar descripciones iniciales</h4>
+                <p style="font-size:13px; color:var(--texto-secundario);">Ver el escenario al empezar</p>
+            </div>
+            <div class="interruptor activo" onclick="this.classList.toggle('activo')"></div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario">📋 Duplicar</button>
+            <button class="btn-secundario btn-peligro">🗑️ Eliminar</button>
+            <button class="btn-principal">✅ GUARDAR CAMBIOS</button>
+        </div>
+    </div>
+
+    <!-- Historia y Saludo -->
+    <div class="seccion">
+        <h3>📜 Contexto y Saludo Inicial</h3>
+        <label class="etiqueta">Historia de fondo / Mundo</label>
+        <textarea class="campo-largo" maxlength="3000" placeholder="Describe cómo es el mundo, qué pasó antes, las reglas de tu rol..."></textarea>
+        <div class="contador">0 / 3000</div>
+
+        <label class="etiqueta">Escena inicial / Saludo</label>
+        <textarea class="campo-largo" style="min-height:180px;" placeholder="Escribe cómo empieza la historia, qué está pasando en el momento en que comienza el rol..."></textarea>
+    </div>
+
+</div>
+
+<!-- Barra de Navegación Inferior -->
+<div class="navegacion">
+    <div class="item-nav"><span>🏠</span> Inicio</div>
+    <div class="item-nav"><span>🔍</span> Buscar</div>
+    <div class="item-nav activo"><span>➕</span> Crear</div>
+    <div class="item-nav"><span>💬</span> Mis Roles</div>
+    <div class="item-nav"><span>👤</span> Perfil</div>
+</div>
+
+</body>
+</html>
